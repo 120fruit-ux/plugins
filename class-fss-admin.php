@@ -189,46 +189,55 @@ class FSS_Admin {
             <div class="fss-admin-history">
                 <!-- Filters -->
                 <div class="fss-admin-filters">
-                    <input type="date" id="admin-filter-from" placeholder="From Date">
-                    <input type="date" id="admin-filter-to" placeholder="To Date">
-                    <input type="text" id="admin-filter-user" placeholder="Created By">
-                    <button class="button" id="admin-apply-filters">Apply Filters</button>
+                    <input type="date" id="filter-date-from" placeholder="From Date">
+                    <input type="date" id="filter-date-to" placeholder="To Date">
+                    <input type="text" id="filter-created-by" placeholder="Created By">
+                    <button class="button button-primary" id="apply-filters">Apply Filters</button>
+                    <button class="button" id="clear-filters">Clear Filters</button>
                     <button class="button" id="admin-export-filtered">Export Results</button>
+                    <button class="button button-secondary" id="admin-fix-negatives" style="margin-left: 10px;">🔧 Fix Negative Values</button>
                 </div>
                 
-                <!-- History Table -->
-                <div id="admin-history-table">
-                    <!-- Loaded via AJAX -->
+                <!-- History Table Container -->
+                <div id="fss-history-table-container">
+                    <!-- Table loaded via AJAX -->
+                </div>
+                
+                <!-- Pagination -->
+                <div id="fss-history-pagination">
+                    <!-- Pagination loaded via AJAX -->
                 </div>
             </div>
         </div>
         
         <script>
         jQuery(document).ready(function($) {
-            // Load initial data
-            loadAdminHistory();
+            // The loadHistoryTable function is defined in frontend.js and will be available
+            // It uses the filter IDs: filter-date-from, filter-date-to, filter-created-by
             
-            $('#admin-apply-filters').on('click', function() {
-                loadAdminHistory();
-            });
-            
-            function loadAdminHistory() {
-                const filters = {
-                    date_from: $('#admin-filter-from').val(),
-                    date_to: $('#admin-filter-to').val(),
-                    created_by: $('#admin-filter-user').val()
-                };
+            $('#admin-fix-negatives').on('click', function() {
+                if (!confirm('This will fix all negative values in the database. Continue?')) {
+                    return;
+                }
+                
+                $(this).prop('disabled', true).text('Fixing...');
                 
                 $.post(ajaxurl, {
-                    action: 'fss_get_admin_history',
-                    nonce: '<?php echo wp_create_nonce('fss_admin_nonce'); ?>',
-                    filters: filters
+                    action: 'fss_fix_negative_values',
+                    nonce: '<?php echo wp_create_nonce('fss_nonce'); ?>'
                 }, function(response) {
+                    $('#admin-fix-negatives').prop('disabled', false).text('🔧 Fix Negative Values');
+                    
                     if (response.success) {
-                        $('#admin-history-table').html(response.data.html);
+                        alert(response.data.message);
+                        if (typeof loadHistoryTable === 'function') {
+                            loadHistoryTable(1);
+                        }
+                    } else {
+                        alert('Error: ' + (response.data || 'Unknown error'));
                     }
                 });
-            }
+            });
         });
         </script>
         <?php

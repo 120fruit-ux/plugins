@@ -288,7 +288,7 @@ function initializeHistory() {
         const $btn = $(this);
         const page = parseInt($btn.attr('data-page'));
         
-        console.log('FSS: Pagination button clicked - Page:', page);
+        console.log('FSS: Pagination button clicked - Page:', page, 'Button:', $btn);
         
         if (!isNaN(page) && page > 0) {
             loadHistoryTable(page);
@@ -299,12 +299,14 @@ function initializeHistory() {
         return false;
     });
     
-    $(document).on('click', '.fss-pagination button', function(e) {
-        if (!$(this).hasClass('fss-page-btn')) return;
+    // Fallback handler for pagination in case the above doesn't work
+    $(document).on('click', '.fss-pagination button[data-page]', function(e) {
         e.preventDefault();
         e.stopImmediatePropagation();
         
         const page = parseInt($(this).data('page'));
+        console.log('FSS: Fallback pagination handler - Page:', page);
+        
         if (!isNaN(page) && page > 0) {
             loadHistoryTable(page);
         }
@@ -522,12 +524,32 @@ function initializeDetailModalHandlers(){
         return false;
     });
     
+    // Edit history button handler
+    $(document).on('click', '.edit-history-btn', function(e){
+        e.preventDefault();
+        const date = $(this).data('date');
+        console.log('FSS: Edit history clicked for date:', date);
+        if(date) showEditModal(date);
+        return false;
+    });
+    
+    // Delete history button handler
+    $(document).on('click', '.delete-history-btn', function(e){
+        e.preventDefault();
+        const date = $(this).data('date');
+        console.log('FSS: Delete history clicked for date:', date);
+        if(date && confirm('Are you sure you want to delete the history for ' + date + '? This action cannot be undone.')) {
+            deleteHistory(date);
+        }
+        return false;
+    });
+    
     $(document).on('click','.fss-modal-close,.fss-modal',function(e){
-        if(e.target===this){ closeDetailModal(); }
+        if(e.target===this){ closeDetailModal(); closeEditModal(); }
     });
     
     $(document).on('keydown',function(e){
-        if(e.key==='Escape'){ closeDetailModal(); }
+        if(e.key==='Escape'){ closeDetailModal(); closeEditModal(); }
     });
 
     function showDetailModal(date){
@@ -663,6 +685,216 @@ function initializeDetailModalHandlers(){
     
     window.closeDetailModal = closeDetailModal;
     window.showDetailModal = showDetailModal;
+    
+    // Edit Modal Functions
+    function showEditModal(date){
+        console.log('FSS: Loading edit modal for date:', date);
+        
+        $.ajax({
+            url: fss_ajax.ajax_url,
+            type: 'POST',
+            data: {action: 'fss_edit_history_date', nonce: fss_ajax.nonce, date: date},
+            success: function(r){
+                if(r.success){ 
+                    renderEditModal(date, r.data); 
+                } else { 
+                    showNotification('Failed to load edit data: ' + (r.data || 'Unknown error'), 'error'); 
+                }
+            },
+            error: function(xhr, status, error){ 
+                showNotification('Network error while loading edit data', 'error'); 
+            }
+        });
+    }
+    
+    function renderEditModal(date, data){
+        const s = data.summary;
+        
+        if(!$('#fss-edit-modal').length){
+            $('body').append(`
+                <div id="fss-edit-modal" class="fss-modal" style="display:none;">
+                    <div class="fss-modal-content fss-edit-modal-content">
+                        <div class="fss-modal-header">
+                            <h2 id="edit-modal-title">Edit Financial History</h2>
+                            <span class="fss-modal-close">&times;</span>
+                        </div>
+                        <div class="fss-modal-body" id="edit-modal-body">
+                        </div>
+                    </div>
+                </div>
+            `);
+        }
+        
+        let html = '<form id="edit-history-form" class="fss-edit-form">';
+        html += '<input type="hidden" id="edit-date" value="' + date + '">';
+        
+        html += '<div class="edit-form-section">';
+        html += '<h3>Order Data</h3>';
+        html += '<div class="form-row">';
+        html += '<label>Total Sales (₦):</label>';
+        html += '<input type="number" id="edit-total-sales" value="' + (s.total_sales || 0) + '" step="0.01" min="0">';
+        html += '</div>';
+        html += '<div class="form-row">';
+        html += '<label>Transfer/Card (₦):</label>';
+        html += '<input type="number" id="edit-transfer-card" value="' + (s.transfer_card || 0) + '" step="0.01" min="0">';
+        html += '</div>';
+        html += '<div class="form-row">';
+        html += '<label>Cash Sales (₦):</label>';
+        html += '<input type="number" id="edit-cash" value="' + (s.cash || 0) + '" step="0.01" min="0">';
+        html += '</div>';
+        html += '<div class="form-row">';
+        html += '<label>Delivery (₦):</label>';
+        html += '<input type="number" id="edit-delivery" value="' + (s.delivery || 0) + '" step="0.01" min="0">';
+        html += '</div>';
+        html += '</div>';
+        
+        html += '<div class="edit-form-section">';
+        html += '<h3>Manual Entries</h3>';
+        html += '<div class="form-row">';
+        html += '<label>Extras (₦):</label>';
+        html += '<input type="number" id="edit-extras" value="' + (s.extras || 0) + '" step="0.01" min="0">';
+        html += '</div>';
+        html += '<div class="form-row">';
+        html += '<label>Extras Remark:</label>';
+        html += '<textarea id="edit-extras-remark" rows="2">' + (s.extras_remark || '') + '</textarea>';
+        html += '</div>';
+        html += '<div class="form-row">';
+        html += '<label>Expenses (₦):</label>';
+        html += '<input type="number" id="edit-expense" value="' + (s.expense || 0) + '" step="0.01" min="0">';
+        html += '</div>';
+        html += '<div class="form-row">';
+        html += '<label>Expense Remark:</label>';
+        html += '<textarea id="edit-expense-remark" rows="2">' + (s.expense_remark || '') + '</textarea>';
+        html += '</div>';
+        html += '</div>';
+        
+        html += '<div class="edit-form-section">';
+        html += '<h3>Cash Flow</h3>';
+        html += '<div class="form-row">';
+        html += '<label>Old Cash (Opening Balance) (₦):</label>';
+        html += '<input type="number" id="edit-old-cash" value="' + (s.old_cash || 0) + '" step="0.01" min="0">';
+        html += '</div>';
+        html += '<div class="form-row">';
+        html += '<label>Market Card Cash (₦):</label>';
+        html += '<input type="number" id="edit-cash-left-market-card" value="' + (s.cash_left_market_card || 0) + '" step="0.01" min="0">';
+        html += '</div>';
+        html += '<div class="form-row">';
+        html += '<label>Cash Left (Auto-calculated):</label>';
+        html += '<input type="number" id="edit-cash-left-display" value="' + (s.cash_left || 0) + '" step="0.01" readonly>';
+        html += '<small class="form-help">Formula: Cash Sales + Extras + Old Cash + Market Card - Expenses</small>';
+        html += '</div>';
+        html += '</div>';
+        
+        html += '<div class="form-actions">';
+        html += '<button type="submit" class="fss-btn fss-btn-primary">Save Changes</button>';
+        html += '<button type="button" class="fss-btn fss-btn-secondary" onclick="closeEditModal()">Cancel</button>';
+        html += '</div>';
+        html += '</form>';
+        
+        $('#edit-modal-body').html(html);
+        $('#edit-modal-title').text('Edit Financial History - ' + date);
+        $('#fss-edit-modal').show();
+        
+        // Auto-calculate cash left on input change
+        $('#edit-cash, #edit-old-cash, #edit-extras, #edit-cash-left-market-card, #edit-expense').on('input', function(){
+            calculateEditCashLeft();
+        });
+        
+        // Form submission
+        $('#edit-history-form').on('submit', function(e){
+            e.preventDefault();
+            saveEditedHistory();
+        });
+    }
+    
+    function calculateEditCashLeft(){
+        const $ = jQuery;
+        const cash = parseFloat($('#edit-cash').val()) || 0;
+        const oldCash = parseFloat($('#edit-old-cash').val()) || 0;
+        const extras = parseFloat($('#edit-extras').val()) || 0;
+        const marketCard = parseFloat($('#edit-cash-left-market-card').val()) || 0;
+        const expense = parseFloat($('#edit-expense').val()) || 0;
+        
+        // Formula: cash_left = cash_sales + extras + old_cash + market_card - expenses
+        let cashLeft = (cash + oldCash + extras + marketCard) - expense;
+        cashLeft = Math.max(0, cashLeft); // Ensure no negative value
+        
+        $('#edit-cash-left-display').val(cashLeft.toFixed(2));
+    }
+    
+    function saveEditedHistory(){
+        const $ = jQuery;
+        const date = $('#edit-date').val();
+        
+        const formData = {
+            action: 'fss_update_history_date',
+            nonce: fss_ajax.nonce,
+            date: date,
+            total_sales: $('#edit-total-sales').val(),
+            transfer_card: $('#edit-transfer-card').val(),
+            cash: $('#edit-cash').val(),
+            delivery: $('#edit-delivery').val(),
+            extras: $('#edit-extras').val(),
+            extras_remark: $('#edit-extras-remark').val(),
+            expense: $('#edit-expense').val(),
+            expense_remark: $('#edit-expense-remark').val(),
+            old_cash: $('#edit-old-cash').val(),
+            cash_left_market_card: $('#edit-cash-left-market-card').val()
+        };
+        
+        $.ajax({
+            url: fss_ajax.ajax_url,
+            type: 'POST',
+            data: formData,
+            success: function(r){
+                if(r.success){
+                    showNotification('History updated successfully!', 'success');
+                    closeEditModal();
+                    // Reload history table
+                    if(typeof loadHistoryTable === 'function'){
+                        loadHistoryTable(1);
+                    }
+                } else {
+                    showNotification('Failed to update history: ' + (r.data || 'Unknown error'), 'error');
+                }
+            },
+            error: function(){
+                showNotification('Network error while saving changes', 'error');
+            }
+        });
+    }
+    
+    function closeEditModal(){
+        $('#fss-edit-modal').hide();
+    }
+    
+    function deleteHistory(date){
+        const $ = jQuery;
+        
+        $.ajax({
+            url: fss_ajax.ajax_url,
+            type: 'POST',
+            data: {action: 'fss_delete_history_date', nonce: fss_ajax.nonce, date: date},
+            success: function(r){
+                if(r.success){
+                    showNotification('History deleted successfully!', 'success');
+                    // Reload history table
+                    if(typeof loadHistoryTable === 'function'){
+                        loadHistoryTable(1);
+                    }
+                } else {
+                    showNotification('Failed to delete history: ' + (r.data || 'Unknown error'), 'error');
+                }
+            },
+            error: function(){
+                showNotification('Network error while deleting history', 'error');
+            }
+        });
+    }
+    
+    window.closeEditModal = closeEditModal;
+    window.showEditModal = showEditModal;
+    window.deleteHistory = deleteHistory;
 }
 
 /* ------------------------- Helpers ------------------------- */
