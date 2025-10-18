@@ -22,6 +22,10 @@ class FSS_Ajax {
         add_action('wp_ajax_fss_get_detailed_history', array($this, 'get_detailed_history'));
         add_action('wp_ajax_nopriv_fss_get_detailed_history', array($this, 'get_detailed_history'));
         add_action('wp_ajax_nopriv_fss_submit_summary', array($this, 'check_permissions'));
+        add_action('wp_ajax_fss_edit_history_date', array($this, 'edit_history_date'));
+        add_action('wp_ajax_fss_update_history_date', array($this, 'update_history_date'));
+        add_action('wp_ajax_fss_delete_history_date', array($this, 'delete_history_date'));
+        add_action('wp_ajax_fss_fix_negative_values', array($this, 'fix_negative_values'));
     }
     
     public function check_permissions() {
@@ -312,6 +316,14 @@ class FSS_Ajax {
                         <button type="button" class="fss-btn fss-btn-small view-details-btn" data-date="<?php echo esc_attr($row->date); ?>">
                             <span class="dashicons dashicons-visibility"></span> View
                         </button>
+                        <?php if (current_user_can('manage_options')): ?>
+                        <button type="button" class="fss-btn fss-btn-small fss-btn-edit edit-history-btn" data-date="<?php echo esc_attr($row->date); ?>" title="Edit History">
+                            <span class="dashicons dashicons-edit"></span> Edit
+                        </button>
+                        <button type="button" class="fss-btn fss-btn-small fss-btn-delete delete-history-btn" data-date="<?php echo esc_attr($row->date); ?>" title="Delete History">
+                            <span class="dashicons dashicons-trash"></span> Delete
+                        </button>
+                        <?php endif; ?>
                     </td>
                 </tr>
                 <?php endforeach; ?>
@@ -589,5 +601,154 @@ class FSS_Ajax {
         }
         fclose($output);
         exit;
+    }
+    
+    /**
+     * Edit history date - Get data for editing
+     */
+    public function edit_history_date() {
+        if (!wp_verify_nonce($_POST['nonce'], 'fss_nonce')) {
+            wp_send_json_error('Security check failed');
+        }
+        
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Insufficient permissions');
+        }
+        
+        $date = sanitize_text_field($_POST['date']);
+        $summary = FSS_Database::get_daily_summary($date);
+        
+        if (!$summary) {
+            wp_send_json_error('No data found for this date');
+        }
+        
+        // Get history entries
+        $history_entries = FSS_Database::get_history_entries($date);
+        
+        wp_send_json_success(array(
+            'summary' => $summary,
+            'history_entries' => $history_entries
+        ));
+    }
+    
+    /**
+     * Update history date - Save edited data
+     */
+    public function update_history_date() {
+        if (!wp_verify_nonce($_POST['nonce'], 'fss_nonce')) {
+            wp_send_json_error('Security check failed');
+        }
+        
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Insufficient permissions');
+        }
+        
+        $date = sanitize_text_field($_POST['date']);
+        
+        // Validate and sanitize input values
+        $total_sales = max(0, floatval($_POST['total_sales']));
+        $transfer_card = max(0, floatval($_POST['transfer_card']));
+        $cash = max(0, floatval($_POST['cash']));
+        $delivery = max(0, floatval($_POST['delivery']));
+        $extras = max(0, floatval($_POST['extras']));
+        $extras_remark = sanitize_textarea_field($_POST['extras_remark']);
+        $expense = max(0, floatval($_POST['expense']));
+        $expense_remark = sanitize_textarea_field($_POST['expense_remark']);
+        $old_cash = max(0, floatval($_POST['old_cash']));
+        $cash_left_market_card = max(0, floatval($_POST['cash_left_market_card']));
+        
+        // Calculate cash left using the correct formula
+        // Formula: cash_left = cash_sales + extras + old_cash + market_card - expenses
+        $cash_left = ($cash + $old_cash + $extras + $cash_left_market_card) - $expense;
+        $cash_left = max(0, $cash_left); // Ensure no negative value
+        
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'fss_daily_summaries';
+        
+        $result = $wpdb->update(
+            $table_name,
+            array(
+                'total_sales' => $total_sales,
+                'transfer_card' => $transfer_card,
+                'cash' => $cash,
+                'delivery' => $delivery,
+                'extras' => $extras,
+                'extras_remark' => $extras_remark,
+                'expense' => $expense,
+                'expense_remark' => $expense_remark,
+                'old_cash' => $old_cash,
+                'cash_left' => $cash_left,
+                'cash_left_market_card' => $cash_left_market_card,
+                'updated_at' => current_time('mysql')
+            ),
+            array('date' => $date),
+            array('%f', '%f', '%f', '%f', '%f', '%s', '%f', '%s', '%f', '%f', '%f', '%s'),
+            array('%s')
+        );
+        
+        if ($result !== false) {
+            // Update old_cash for the next day
+            $next_date = date('Y-m-d', strtotime($date . ' +1 day'));
+            update_option('fss_old_cash_' . $next_date, $cash_left);
+            
+            wp_send_json_success(array(
+                'message' => 'History updated successfully',
+                'cash_left' => $cash_left
+            ));
+        } else {
+            wp_send_json_error('Failed to update history');
+        }
+    }
+    
+    /**
+     * Delete history date
+     */
+    public function delete_history_date() {
+        if (!wp_verify_nonce($_POST['nonce'], 'fss_nonce')) {
+            wp_send_json_error('Security check failed');
+        }
+        
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Insufficient permissions');
+        }
+        
+        $date = sanitize_text_field($_POST['date']);
+        
+        global $wpdb;
+        
+        // Delete history entries first
+        $history_table = $wpdb->prefix . 'fss_history';
+        $wpdb->delete($history_table, array('date' => $date), array('%s'));
+        
+        // Delete summary
+        $summary_table = $wpdb->prefix . 'fss_daily_summaries';
+        $result = $wpdb->delete($summary_table, array('date' => $date), array('%s'));
+        
+        if ($result) {
+            wp_send_json_success('History deleted successfully');
+        } else {
+            wp_send_json_error('Failed to delete history');
+        }
+    }
+    
+    /**
+     * Fix negative values in database
+     */
+    public function fix_negative_values() {
+        if (!wp_verify_nonce($_POST['nonce'], 'fss_nonce')) {
+            wp_send_json_error('Security check failed');
+        }
+        
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Insufficient permissions');
+        }
+        
+        $result = FSS_Database::fix_negative_values();
+        
+        if ($result['success']) {
+            wp_send_json_success($result);
+        } else {
+            wp_send_json_error('Failed to fix negative values');
+        }
     }
 }

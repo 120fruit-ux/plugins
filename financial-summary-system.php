@@ -205,23 +205,43 @@ class Financial_Summary_System {
             $yesterday_date
         ));
         
+        // Ensure yesterday's cash left is not negative
+        $yesterday_cash_left = max(0, floatval($yesterday_cash_left ?: 0));
+        
         // Store the old cash for today
-        update_option('fss_old_cash_' . $today_date, $yesterday_cash_left ?: 0);
+        update_option('fss_old_cash_' . $today_date, $yesterday_cash_left);
+        
+        // Create automatic history record for today if it doesn't exist
+        $today_summary = FSS_Database::get_daily_summary($today_date);
+        if (!$today_summary) {
+            // Create a new summary record for today with default values
+            FSS_Database::create_or_update_daily_summary($today_date, array(
+                'old_cash' => $yesterday_cash_left,
+                'extras' => 0,
+                'extras_remark' => '',
+                'expense' => 0,
+                'expense_remark' => '',
+                'cash_left_market_card' => 0,
+                'submission_type' => 'auto_daily_reset'
+            ));
+            
+            error_log('FSS: Automatic history created for ' . $today_date);
+        }
         
         // Send daily reset notification to admins
         FSS_Notifications::send_push_notification(
             'Daily Reset Complete',
-            'Financial data has been reset for ' . $lagos_time->format('F d, Y'),
+            'Financial data has been reset for ' . $lagos_time->format('F d, Y') . '. Old Cash: ₦' . number_format($yesterday_cash_left, 2),
             FSS_PLUGIN_URL . 'assets/images/reset-icon.png',
             array(
                 'type' => 'daily_reset',
                 'date' => $today_date,
-                'old_cash' => $yesterday_cash_left ?: 0
+                'old_cash' => $yesterday_cash_left
             )
         );
         
         // Log the reset
-        error_log('FSS Daily Reset: ' . $today_date . ' - Old Cash: ' . ($yesterday_cash_left ?: 0));
+        error_log('FSS Daily Reset: ' . $today_date . ' - Old Cash: ' . $yesterday_cash_left);
     }
     
     public function hourly_notification_check() {

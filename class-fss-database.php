@@ -378,11 +378,20 @@ class FSS_Database {
             ? floatval($data['cash_left_market_card']) 
             : ($existing ? floatval($existing->cash_left_market_card) : 0);
         
-        // Calculate cash left (FIXED FORMULA)
+        // Ensure no negative values are used in calculations
+        $cash_left_market_card = max(0, $cash_left_market_card);
+        $old_cash = max(0, $old_cash);
+        $new_extras = max(0, $new_extras);
+        $new_expense = max(0, $new_expense);
+        
+        // Calculate cash left using the correct formula
+        // Formula: cash_left = cash_sales + extras + old_cash + market_card - expenses
         if (isset($data['cash_left'])) {
-            $cash_left = floatval($data['cash_left']);
+            $cash_left = max(0, floatval($data['cash_left'])); // Ensure cash_left is not negative
         } else {
             $cash_left = ($orders_data['cash'] + $old_cash + $new_extras + $cash_left_market_card) - $new_expense;
+            // Ensure cash left is not negative
+            $cash_left = max(0, $cash_left);
         }
         
         // Prepare update data
@@ -596,6 +605,64 @@ class FSS_Database {
         ));
         
         return true;
+    }
+    
+    /**
+     * Fix negative values in database - Admin utility function
+     */
+    public static function fix_negative_values() {
+        global $wpdb;
+        $table_name = $wpdb->prefix . self::DAILY_SUMMARIES_TABLE;
+        
+        // Get all records with negative cash_left
+        $negative_records = $wpdb->get_results(
+            "SELECT * FROM $table_name WHERE cash_left < 0 OR old_cash < 0 OR extras < 0 OR expense < 0 OR cash_left_market_card < 0 ORDER BY date ASC"
+        );
+        
+        $fixed_count = 0;
+        
+        foreach ($negative_records as $record) {
+            $date = $record->date;
+            
+            // Fix all negative values to 0
+            $old_cash = max(0, floatval($record->old_cash));
+            $extras = max(0, floatval($record->extras));
+            $expense = max(0, floatval($record->expense));
+            $cash_left_market_card = max(0, floatval($record->cash_left_market_card));
+            $cash = max(0, floatval($record->cash));
+            
+            // Recalculate cash_left with correct formula
+            $cash_left = ($cash + $old_cash + $extras + $cash_left_market_card) - $expense;
+            $cash_left = max(0, $cash_left);
+            
+            // Update the record
+            $wpdb->update(
+                $table_name,
+                array(
+                    'old_cash' => $old_cash,
+                    'extras' => $extras,
+                    'expense' => $expense,
+                    'cash_left_market_card' => $cash_left_market_card,
+                    'cash_left' => $cash_left,
+                    'updated_at' => current_time('mysql')
+                ),
+                array('date' => $date),
+                array('%f', '%f', '%f', '%f', '%f', '%s'),
+                array('%s')
+            );
+            
+            // Update old_cash for next day
+            $next_date = date('Y-m-d', strtotime($date . ' +1 day'));
+            update_option('fss_old_cash_' . $next_date, $cash_left);
+            
+            $fixed_count++;
+        }
+        
+        return array(
+            'success' => true,
+            'fixed_count' => $fixed_count,
+            'message' => "Fixed {$fixed_count} records with negative values"
+        );
     }
     
     /**
