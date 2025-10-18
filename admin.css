@@ -1,0 +1,531 @@
+/* Financial Summary System - Admin Styles */
+
+/* Admin Dashboard */
+.fss-admin-dashboard {
+    margin: 20px 0;
+}
+
+.fss-admin-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.fss-stat-card {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+}
+
+.fss-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.fss-stat-card h3 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.fss-stat-number {
+    font-size: 24px;
+    font-weight: bold;
+    color: #FF0000;
+    margin-bottom: 5px;
+}
+
+.fss-stat-change {
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+.fss-stat-change.positive {
+    background: #d4edda;
+    color: #155724;
+}
+
+.fss-stat-change.negative {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Admin Sections */
+.fss-admin-section {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.fss-admin-section h2 {
+    margin: 0 0 15px 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #FF0000;
+    color: #333;
+}
+
+/* Quick Actions */
+.fss-quick-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.fss-quick-actions .button {
+    min-width: 120px;
+}
+
+/* History & Analytics */
+.fss-admin-history,
+.fss-admin-analytics {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.fss-admin-filters {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.fss-admin-filters input,
+.fss-admin-filters select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.fss-analytics-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.fss-admin-charts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.fss-chart-container {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.fss-chart-container h3 {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.fss-chart-container canvas {
+    max-height: 300px;
+}
+
+/* KPIs and Metrics */
+.fss-admin-metrics {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.fss-admin-metrics h2 {
+    margin: 0 0 20px 0;
+    color: #333;
+}
+
+#admin-kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.fss-metric {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 4px solid #FF0000;
+}
+
+.fss-metric-label {
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+}
+
+.fss-metric-value {
+    font-size: 18px;
+    font-weight: bold;
+    color: #FF0000;
+}
+
+/* Dashboard Widgets */
+.fss-widget-content {
+    padding: 0;
+}
+
+.fss-widget-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.fss-widget-stat:last-child {
+    border-bottom: none;
+}
+
+.fss-widget-label {
+    font-size: 13px;
+    color: #666;
+}
+
+.fss-widget-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #FF0000;
+}
+
+.fss-widget-actions {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #f0f0f0;
+}
+
+/* Alerts Widget */
+.fss-alerts-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.fss-alert-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.fss-alert-item:last-child {
+    border-bottom: none;
+}
+
+.fss-alert-item strong {
+    display: block;
+    color: #FF0000;
+    font-size: 13px;
+    margin-bottom: 5px;
+}
+
+.fss-alert-item p {
+    margin: 0;
+    font-size: 12px;
+    color: #666;
+    line-height: 1.4;
+}
+
+.fss-alert-item small {
+    font-size: 11px;
+    color: #999;
+}
+
+/* Tables */
+.fss-admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.fss-admin-table th,
+.fss-admin-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.fss-admin-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+}
+
+.fss-admin-table tr:hover {
+    background: #f8f9fa;
+}
+
+.fss-admin-table .status {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.fss-admin-table .status.completed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.fss-admin-table .status.pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.fss-admin-table .status.approved {
+    background: #cce5ff;
+    color: #004085;
+}
+
+/* Settings Page */
+.fss-settings-section {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.fss-settings-section h3 {
+    margin: 0 0 15px 0;
+    color: #333;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 10px;
+}
+
+.fss-setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.fss-setting-row:last-child {
+    border-bottom: none;
+}
+
+.fss-setting-label {
+    flex: 1;
+}
+
+.fss-setting-label h4 {
+    margin: 0 0 5px 0;
+    color: #333;
+    font-size: 16px;
+}
+
+.fss-setting-label p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.fss-setting-control {
+    flex: 0 0 auto;
+    margin-left: 20px;
+}
+
+/* Notifications */
+.fss-admin-notice {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-left: 4px solid #FF0000;
+    border-radius: 4px;
+    padding: 15px;
+    margin: 20px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.fss-admin-notice.success {
+    border-left-color: #28a745;
+}
+
+.fss-admin-notice.warning {
+    border-left-color: #ffc107;
+}
+
+.fss-admin-notice.error {
+    border-left-color: #dc3545;
+}
+
+.fss-admin-notice h4 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 16px;
+}
+
+.fss-admin-notice p {
+    margin: 0;
+    color: #666;
+    line-height: 1.5;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .fss-admin-charts {
+        grid-template-columns: 1fr;
+    }
+    
+    .fss-chart-container canvas {
+        max-height: 250px;
+    }
+}
+
+@media (max-width: 768px) {
+    .fss-admin-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .fss-admin-filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .fss-admin-filters input,
+    .fss-admin-filters select,
+    .fss-admin-filters button {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+    
+    .fss-quick-actions {
+        flex-direction: column;
+    }
+    
+    .fss-quick-actions .button {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+    
+    .fss-setting-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .fss-setting-control {
+        margin-left: 0;
+        margin-top: 10px;
+    }
+    
+    #admin-kpis {
+        grid-template-columns: 1fr;
+    }
+    
+    .fss-admin-table {
+        font-size: 14px;
+    }
+    
+    .fss-admin-table th,
+    .fss-admin-table td {
+        padding: 8px 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .fss-admin-section {
+        padding: 15px;
+    }
+    
+    .fss-stat-card {
+        padding: 15px;
+    }
+    
+    .fss-stat-number {
+        font-size: 20px;
+    }
+    
+    .fss-chart-container {
+        padding: 15px;
+    }
+    
+    .fss-chart-container canvas {
+        max-height: 200px;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .fss-admin-dashboard,
+    .fss-admin-section,
+    .fss-stat-card,
+    .fss-chart-container,
+    .fss-admin-metrics {
+        background: #2a2a2a;
+        border-color: #444;
+        color: #fff;
+    }
+    
+    .fss-stat-card h3,
+    .fss-admin-section h2,
+    .fss-chart-container h3 {
+        color: #fff;
+    }
+    
+    .fss-admin-table {
+        background: #2a2a2a;
+        color: #fff;
+    }
+    
+    .fss-admin-table th {
+        background: #333;
+    }
+    
+    .fss-admin-table tr:hover {
+        background: #333;
+    }
+    
+    .fss-metric {
+        background: #333;
+    }
+    
+    .fss-widget-stat {
+        border-color: #444;
+    }
+}
+
+/* Print styles */
+@media print {
+    .fss-quick-actions,
+    .fss-admin-filters,
+    .button {
+        display: none !important;
+    }
+    
+    .fss-admin-dashboard,
+    .fss-admin-section,
+    .fss-chart-container {
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+    
+    .fss-admin-charts {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,143 @@
+/* Push Notifications UI Styles */
+
+.fss-notification-section {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+}
+
+.fss-notification-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.fss-notification-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #f8f9fa;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.fss-notification-btn:hover {
+    background: #FF0000;
+    color: white;
+    border-color: #FF0000;
+}
+
+.fss-notification-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.fss-notification-status {
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.fss-notification-status.enabled {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.fss-notification-status.disabled {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.fss-notification-status.denied {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Mobile specific styles */
+@media (max-width: 768px) {
+    .fss-notification-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .fss-notification-btn {
+        justify-content: center;
+        padding: 8px 12px;
+    }
+    
+    .fss-notification-status {
+        text-align: center;
+        justify-content: center;
+    }
+}
+
+/* Notification permission request overlay */
+.fss-permission-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.fss-permission-modal {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.fss-permission-modal h3 {
+    margin-top: 0;
+    color: #FF0000;
+}
+
+.fss-permission-modal .icon {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+.fss-permission-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.fss-permission-buttons button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.fss-permission-buttons .allow {
+    background: #FF0000;
+    color: white;
+}
+
+.fss-permission-buttons .deny {
+    background: #f8f9fa;
+    color: #333;
+    border: 1px solid #ddd;
+}

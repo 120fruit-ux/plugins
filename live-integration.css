@@ -1,0 +1,136 @@
+/* Live Order Integration Styles */
+
+.field-updated {
+    animation: fieldUpdate 1s ease-out;
+    border-color: #28a745 !important;
+}
+
+.field-calculated {
+    animation: fieldCalculate 0.5s ease-out;
+    background: linear-gradient(45deg, #e8f5e9, #ffffff) !important;
+}
+
+@keyframes fieldUpdate {
+    0% { 
+        background: #d4edda;
+        transform: scale(1.02);
+    }
+    100% { 
+        background: #f8f9fa;
+        transform: scale(1);
+    }
+}
+
+@keyframes fieldCalculate {
+    0% { 
+        background: #fff3cd;
+    }
+    100% { 
+        background: #e9ecef;
+    }
+}
+
+.fss-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    animation: slideInRight 0.3s ease-out;
+    max-width: 400px;
+    cursor: pointer;
+}
+
+.fss-notification-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.fss-notification-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.fss-notification-info {
+    background: #cce7ff;
+    color: #004085;
+    border: 1px solid #b3d7ff;
+}
+
+.notification-icon::before {
+    font-family: dashicons;
+    font-size: 16px;
+}
+
+.fss-notification-success .notification-icon::before {
+    content: '\f147'; /* checkmark */
+}
+
+.fss-notification-error .notification-icon::before {
+    content: '\f534'; /* warning */
+}
+
+.fss-notification-info .notification-icon::before {
+    content: '\f348'; /* info */
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    font-size: 18px;
+    line-height: 1;
+    opacity: 0.7;
+    cursor: pointer;
+    margin-left: auto;
+}
+
+.notification-close:hover {
+    opacity: 1;
+}
+
+@keyframes slideInRight {
+    from { 
+        transform: translateX(100%); 
+        opacity: 0; 
+    }
+    to { 
+        transform: translateX(0); 
+        opacity: 1; 
+    }
+}
+
+/* Status indicators */
+.status-indicator.active::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(40,167,69,0.3) 0%, transparent 70%);
+    animation: pulse 2s infinite;
+}
+
+/* Loading states */
+.fss-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
