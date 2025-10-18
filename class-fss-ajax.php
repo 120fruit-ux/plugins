@@ -359,7 +359,7 @@ class FSS_Ajax {
             <?php endif; ?>
         </div>
         <div class="fss-pagination-info">
-            Page <?php echo $page; ?> of <?php echo $results['pages']; ?> (<?php echo $results['total']; ?> total records)
+            Showing page <?php echo $page; ?> of <?php echo max(1, $results['pages']); ?> (<?php echo $results['total']; ?> total records)
         </div>
         <?php
         $pagination_html = ob_get_clean();

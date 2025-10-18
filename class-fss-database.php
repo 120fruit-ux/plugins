@@ -496,6 +496,10 @@ class FSS_Database {
         global $wpdb;
         $table_name = $wpdb->prefix . self::DAILY_SUMMARIES_TABLE;
         
+        // Ensure page is at least 1
+        $page = max(1, intval($page));
+        $per_page = max(1, min(100, intval($per_page))); // Limit to 100 per page
+        
         $where_clauses = array();
         $where_values = array();
         
@@ -510,8 +514,8 @@ class FSS_Database {
         }
         
         if (!empty($filters['created_by'])) {
-            $where_clauses[] = "created_by = %s";
-            $where_values[] = sanitize_text_field($filters['created_by']);
+            $where_clauses[] = "created_by LIKE %s";
+            $where_values[] = '%' . $wpdb->esc_like(sanitize_text_field($filters['created_by'])) . '%';
         }
         
         $where_sql = '';
@@ -524,11 +528,14 @@ class FSS_Database {
         if (!empty($where_values)) {
             $count_query = $wpdb->prepare($count_query, $where_values);
         }
-        $total = $wpdb->get_var($count_query);
+        $total = intval($wpdb->get_var($count_query));
         
         // Calculate pagination
-        $total_pages = ceil($total / $per_page);
+        $total_pages = $total > 0 ? ceil($total / $per_page) : 1;
         $offset = ($page - 1) * $per_page;
+        
+        // Ensure offset is not negative
+        $offset = max(0, $offset);
         
         // Get results
         $results_query = "SELECT * FROM $table_name $where_sql ORDER BY date DESC LIMIT %d OFFSET %d";

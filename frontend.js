@@ -288,7 +288,7 @@ function initializeHistory() {
         const $btn = $(this);
         const page = parseInt($btn.attr('data-page'));
         
-        console.log('FSS: Pagination button clicked - Page:', page);
+        console.log('FSS: Pagination button clicked - Page:', page, 'Button:', $btn);
         
         if (!isNaN(page) && page > 0) {
             loadHistoryTable(page);
@@ -299,12 +299,14 @@ function initializeHistory() {
         return false;
     });
     
-    $(document).on('click', '.fss-pagination button', function(e) {
-        if (!$(this).hasClass('fss-page-btn')) return;
+    // Fallback handler for pagination in case the above doesn't work
+    $(document).on('click', '.fss-pagination button[data-page]', function(e) {
         e.preventDefault();
         e.stopImmediatePropagation();
         
         const page = parseInt($(this).data('page'));
+        console.log('FSS: Fallback pagination handler - Page:', page);
+        
         if (!isNaN(page) && page > 0) {
             loadHistoryTable(page);
         }
